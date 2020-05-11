@@ -75,6 +75,12 @@ MOVE_FILE() {
     [ -e "${DOT_ARIA2_FILE}" ] && rm -vf "${DOT_ARIA2_FILE}"
 }
 
+D_MOVE_FILE() {
+    TASK_INFO
+    echo -e "$(date +"%m/%d %H:%M:%S") ${INFO} Clean up extra files ..."
+    [ -e "${DOT_ARIA2_FILE}" ] && rm -vf "${DOT_ARIA2_FILE}"
+}
+
 # ============================================================
 
 if [ -z $2 ]; then
@@ -103,8 +109,7 @@ fi
 
 
 if [ "${CONTRAST_PATH}" = "${FILE_PATH}" ] && [ $2 -eq 1 ]; then # 普通单文件下载，不进行任何移动。
-    echo -e "$(date +"%m/%d %H:%M:%S") ${INFO} Clean up extra files ..."
-    [ -e "${DOT_ARIA2_FILE}" ] && rm -vf "${DOT_ARIA2_FILE}"
+    D_MOVE_FILE
     exit 0
 elif [ "${ANI_PATH}" = "${FILE_PATH}" ] && [ $2 -gt 1 ]; then # BT下载（动画片文件夹内文件数大于1），移动整个文件夹到设定的文件夹。
     SOURCE_PATH="${CONTRAST_ANI_PATH}"

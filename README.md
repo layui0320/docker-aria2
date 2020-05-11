@@ -60,6 +60,7 @@ __当前的镜像或多或少都有以下几点不符合的我的需求__
       1、修复`动画片种子中，种子文件包含多文件夹`下的文件夹移动、回收失败问题，下载动画片请无比设置目录为`/downloads/ani`
       2、增加`movies`,`tv`,`ani`文件夹，推荐下载任务时选择对应的文件夹，防止文件移动，删除失败（说真的也就动画片的文件夹会这么复杂）
       3、调整`dmof`策略，不移动无文件夹的单文件
+      4、调优删除文件和删除.aria2文件脚本
 
 ## 2020/05/08
 
@@ -271,3 +272,4 @@ services:
 # Preview
 ![N94s7q](https://cdn.jsdelivr.net/gh/SuperNG6/pic@master/uPic/N94s7q.jpg)
 ![Hq0pXW](https://cdn.jsdelivr.net/gh/SuperNG6/pic@master/uPic/Hq0pXW.jpg)
+![Xnip2020-05-11_20-11-11](https://cdn.jsdelivr.net/gh/SuperNG6/pic@master/uPic/Xnip2020-05-11_20-11-11.png)
