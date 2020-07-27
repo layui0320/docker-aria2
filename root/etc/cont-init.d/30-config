@@ -48,8 +48,11 @@ then
   bash /aria2/script/tracker.sh
 fi
 
+touch /var/log/cron.log
 # rpc update tracker
-# if [ "$RUT" == "true" ]
-# then
-#   bash /aria2/script/rpc_tracker.sh RPC "$ADDRESS:$PORT" "$SECRET"
-# fi
+if [ "$RUT" == "true" ]
+then
+  cp /aria2/conf/rpc-tracker1 /etc/crontabs/root
+  /usr/sbin/crond
+fi
+cp /aria2/conf/rpc-tracker0 /etc/crontabs/root
