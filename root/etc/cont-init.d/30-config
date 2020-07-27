@@ -48,7 +48,6 @@ then
   bash /aria2/script/tracker.sh
 fi
 
-touch /var/log/cron.log
 # rpc update tracker
 if [ "$RUT" == "true" ]
 then
