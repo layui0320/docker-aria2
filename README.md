@@ -1,3 +1,5 @@
+![](https://img.shields.io/docker/pulls/superng6/aria2) ![GitHub last commit](https://img.shields.io/github/last-commit/superng6/docker-aria2) ![](https://img.shields.io/github/issues-closed/superng6/docker-aria2) ![](https://img.shields.io/github/issues/superng6/docker-aria2) ![GitHub stars](https://img.shields.io/github/stars/superng6/docker-aria2) ![GitHub forks](https://img.shields.io/github/forks/superng6/docker-aria2)
+
 # Docker Aria2的最佳实践
 Docker Hub：https://hub.docker.com/r/superng6/aria2
 
@@ -40,11 +42,17 @@ __当前的镜像或多或少都有以下几点不符合的我的需求__
 - 解除aria2c下载线程限制
 - 支持自动更新tracker，每次启动容器时会自动更新tracker
 - 手动设置磁盘缓存`CACHE`，默认参数`128M`
-- 默认删除文件后移动至回收站，防止丢失文件
+- 可选则开启回收站，删除文件后移动至回收站，防止丢失文件
+- 可选下载任务完成后，保留目录结构移动文件
+- 相对来说最完善的任务处理脚本
 - 更多可手动调节参数，大量选项不需要修改conf文件
 - 全平台镜像统一tag
 
 # Architecture
+### 全平台镜像统一Tag
+
+#### latest (default none webui)
+docker pull superng6/aria2:latest  
 
 | Architecture | Tag            |
 | ------------ | -------------- |
@@ -52,15 +60,62 @@ __当前的镜像或多或少都有以下几点不符合的我的需求__
 | arm64        | latest         |
 | armhf        | latest         |
 
+#### webui-latest (default aria2 with webui ariang)
+docker pull superng6/aria2:webui-latest  
+
+| Architecture | Tag            |
+| ------------ | -------------- |
+| x86-64       | webui-latest         |
+| arm64        | webui-latest         |
+| armhf        | webui-latest         |
 
 
 # Changelogs
+## 2020/06/18
+
+      1、新增设置下载文件预分配磁盘模式选择，部分arm设备系统可能需要选择为`FA=none`
+         不过好像aria2即便把`file-allocation=none`，也会使用`prealloc`，导致磁盘预分配时间大大加长
+         能够使用`file-allocation=falloc`就使用这个，大部分操作系统都支持
+
+## 2020/06/02
+
+      1、aria2-with-webui分支添加aria2 webui ariang（真不知道有啥用，但是好多人就是喜欢容器里也有webui）
+      2、内置AriaNg-1.1.6-AllInOne，如果想替换为其他webui或其他版本ariang，挂载`/www`，把webui扔进去就可以了
+      3、使用darkhttpd，轻量化网页服务器，默认webui端口为`80`
+
+## 2020/05/20
+
+      1、调整`dmof`逻辑，下载任务为单文件且路径为自定义路径则保留目录结构移动
+      2、完善删除脚本与回收脚本对于自定义路径中文件任务单执行逻辑
+
+## 2020/05/18
+
+      1、增加自定义二级目录功能`CUSDIR=cusdir`-->`/download/cusdir` （ENV中只能添加一个CUS）
+      2、预设的三个目录`动画片->ANIDIR`,`电影->MOVDIR`,`电视->TVDIR`，可根据自己喜好修改预设分类目录名称
+        详见《环境变量说明》
+      3、完善了单文件任务中包含多级目录的移动机制
+      4、进一步完善脚本
+
+<details>
+   <summary>Change Log History</summary>
+
+## 2020/05/12
+
+      1、调整了回收站脚本、下载完成后移动文件脚本、删除文件和删除.aria2文件脚本的执行逻辑
+      2、重点事项说明，由于aria2自身的限制，BT任务如果自身包含多文件夹，需要注意文件归类目录的问题
+        1.如果像我一样，下载文件喜欢归类；如任务类型为电影，归类在`/downloads/movies`，需要注意归类目录名称
+        2.其实大部分下载任务不需要注意下载路径，只有在BT任务包含多文件夹的情况才需要注意
+        3.目前我已经提前设定了3个归类路径`/downloads/movies`,`/downloads/tv`,`/downloads/ani`
+          如需归类，请按照以上路径进行归类（如果在BT任务不包含多文件夹则路径选择哪都无所谓）
+      3、基本没什么可改的了（有些地方受限于aria2自身，我也无能为力），大部分情况的我都写了判断，aria2还是少更新的好。
+         重启aria2后DHT重建，对下载速度影响极大，下载别人的DHT文件也无任何意义，感兴趣的可以去了解一下DHT是什么
+
 ## 2020/05/11
 
-      1、修复`动画片种子中，种子文件包含多文件夹`下的文件夹移动、回收失败问题，下载动画片请无比设置目录为`/downloads/ani`
+      1、修复`动画片种子中，种子文件包含多文件夹`下的文件夹移动、回收失败问题，如果需要下载归类的话，动画片请务必设置目录为`/downloads/ani`
       2、增加`movies`,`tv`,`ani`文件夹，推荐下载任务时选择对应的文件夹，防止文件移动，删除失败（说真的也就动画片的文件夹会这么复杂）
       3、调整`dmof`策略，不移动无文件夹的单文件
-      4、调优删除文件和删除.aria2文件脚本
+      4、优化删除文件和删除.aria2文件脚本执行逻辑
 
 ## 2020/05/08
 
@@ -89,9 +144,6 @@ __当前的镜像或多或少都有以下几点不符合的我的需求__
 ## 2020/04/17
 
       1、使用jsdelivr cdn加速下载trackers，但是会出现缓存导致的不是最新版本
-
-<details>
-   <summary>Change Log History</summary>
 
 ## 2020/03/02
 
@@ -141,6 +193,12 @@ __当前的镜像或多或少都有以下几点不符合的我的需求__
 我在Gitee上构建了基于ariang主线稳定版的在线webui:  
 仅https https://sleele.gitee.io/#!/downloading  
 http  http://sleele.gitee.io/ariang/#!/downloading  
+
+## 自行构建webui
+在docker上部署最新版ariang  
+https://sleele.com/2020/06/03/tiny-docker-ariang/  
+https://github.com/SuperNG6/docker-ariang  
+https://hub.docker.com/r/superng6/ariang  
 
 ## 挂载路径
 ``/config`` ``/downloads``
@@ -197,17 +255,22 @@ token现在不用写在配置文件里了，使用2019.10.11日前版本的用�
 |参数|说明|
 |-|:-|
 | `--name=aria2` |容器名设置为aria2|
-| `本地文件夹1:/downloads` |Aria2下载位置|
-| `本地文件夹2:/config` |Aria2配置文件位置|
-| `PUID=1026` |Linux用户UID|
-| `PGID=100` |Linux用户GID|
-| `SECRET=yourtoken` |Aria2 token|
-| `CACHE=1024M` |Aria2磁盘缓存配置|
-| `UpdateTracker=true` |启动容器时更新Trackers|
-| `RECYCLE=true` |启用回收站|
-| `MOVE=true` |下载完成文件后移动文件或文件夹|
-| `MOVE=dmof` |下载任务为单个文件则不移动，若为文件夹则移动|
-| `SMD=true` |保存磁力链接为种子文件|
+| `-v 本地文件夹1:/downloads` |Aria2下载位置|
+| `-v 本地文件夹2:/config` |Aria2配置文件位置|
+| `-e PUID=1026` |Linux用户UID|
+| `-e PGID=100` |Linux用户GID|
+| `-e SECRET=yourtoken` |Aria2 token|
+| `-e CACHE=1024M` |Aria2磁盘缓存配置|
+| `-e UpdateTracker=true` |启动容器时更新Trackers|
+| `-e RECYCLE=true` |启用回收站|
+| `-e MOVE=true` |下载完成文件后移动文件或文件夹|
+| `-e MOVE=dmof` |下载任务为单个文件则不移动，若为文件夹则移动|
+| `-e SMD=true` |保存磁力链接为种子文件|
+| `-e ANIDIR=ani` |动画片分类目录名称(支持中文名称)|
+| `-e MOVDIR=movies` |电影分类目录名称(支持中文名称)|
+| `-e TVDIR=tv` |电视分类目录名称(支持中文名称)|
+| `-e CUSDIR=cusdir` |自定义分类目录名称(支持中文名称)|
+| `-e FA=` |磁盘预分配模式`none`,`falloc`,`trunc`,`prealloc`|
 | `-p 6800:6800` |Aria2 RPC连接端口|
 | `-p 6881:6881` |Aria2 tcp下载端口|
 | `-p 6881:6881/udp` |Aria2 p2p udp下载端口|
@@ -228,10 +291,15 @@ docker create \
   -e SECRET=yourtoken \
   -e CACHE=512M \
   -e UpdateTracker=true \
+  -e FA=falloc \
   -e QUIET=true \
   -e RECYCLE=true \
   -e MOVE=true \
   -e SMD=false \
+  -e ANIDIR=ani \
+  -e MOVDIR=movies \
+  -e TVDIR=tv \
+  -e CUSDIR=cusdir \
   -p 6881:6881 \
   -p 6881:6881/udp \
   -p 6800:6800 \
@@ -256,9 +324,14 @@ services:
       - CACHE=512M
       - UpdateTracker=true
       - QUIET=true
+      - FA=falloc
       - RECYCLE=true
       - MOVE=true
       - SMD=false
+      - ANIDIR=ani
+      - MOVDIR=movies
+      - TVDIR=tv
+      - CUSDIR=cusdir
     volumes:
       - /path/to/appdata/config:/config
       - /path/to/downloads:/downloads
@@ -272,4 +345,4 @@ services:
 # Preview
 ![N94s7q](https://cdn.jsdelivr.net/gh/SuperNG6/pic@master/uPic/N94s7q.jpg)
 ![Hq0pXW](https://cdn.jsdelivr.net/gh/SuperNG6/pic@master/uPic/Hq0pXW.jpg)
-![Xnip2020-05-11_20-11-11](https://cdn.jsdelivr.net/gh/SuperNG6/pic@master/uPic/Xnip2020-05-11_20-11-11.png)
+![Xnip2020-05-11_15-43-56](https://cdn.jsdelivr.net/gh/SuperNG6/pic@master/uPic/Xnip2020-05-11_15-43-56.png)
