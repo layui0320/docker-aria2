@@ -54,5 +54,7 @@ if [ "$RUT" == "true" ]
 then
   cp /aria2/conf/rpc-tracker1 /etc/crontabs/root
   /usr/sbin/crond
+else
+  cp /aria2/conf/rpc-tracker0 /etc/crontabs/root
 fi
-cp /aria2/conf/rpc-tracker0 /etc/crontabs/root
+
