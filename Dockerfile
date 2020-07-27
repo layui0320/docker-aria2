@@ -24,8 +24,6 @@ COPY --from=builder  /usr/local/bin/aria2c  /usr/local/bin/aria2c
 # permissions
 RUN apk add --no-cache curl \
 && chmod a+x /usr/local/bin/aria2c \
-# Add crontab file in the cron directory
-COPY crontabfile /etc/cron.d/hello-cron
 && rm -rf /var/cache/apk/* /tmp/*
 
 VOLUME /config /downloads
