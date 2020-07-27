@@ -1,4 +1,4 @@
-FROM lsiobase/alpine:3.11 as builder
+FROM lsiobase/alpine:3.12 as builder
 
 # download static aria2c
 RUN apk add --no-cache curl \
@@ -6,14 +6,15 @@ RUN apk add --no-cache curl \
 
 
 # install static aria2c
-FROM lsiobase/alpine:3.11
+FROM lsiobase/alpine:3.12
 
 # set label
 LABEL maintainer="NG6"
-ENV TZ=Asia/Shanghai UpdateTracker=true SECRET=yourtoken CACHE=128M QUIET=true \
+ENV TZ=Asia/Shanghai UT=true RUT=true SECRET=yourtoken CACHE=128M QUIET=true \
 RECYCLE=false MOVE=false SMD=false FA=falloc \
 ANIDIR=ani MOVDIR=movies TVDIR=tv \
 CUSDIR=cusdir \
+ADDRESS=127.0.0.1 PORT=6800 \
 PUID=1026 PGID=100
 
 # copy local files && aria2c
@@ -21,7 +22,8 @@ COPY root/ /
 COPY --from=builder  /usr/local/bin/aria2c  /usr/local/bin/aria2c
 
 # permissions
-RUN chmod a+x /usr/local/bin/aria2c
+RUN apk add --no-cache curl \
+&& chmod a+x /usr/local/bin/aria2c
 
 VOLUME /config /downloads
 

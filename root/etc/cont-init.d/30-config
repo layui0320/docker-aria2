@@ -42,9 +42,18 @@ else
     sed -i 's@^\(file-allocation=\).*@\1none@' /config/aria2.conf 
 fi
 
+# permissions
+chmod a+x \
+  /aria2/script/*
+
 # auto updatetracker
-if [ "$UpdateTracker" == "true" ]
+if [ "$UT" == "true" ]
 then
   bash /aria2/script/tracker.sh
 fi
 
+# rpc update tracker
+if [ "$RUT" == "true" ]
+then
+  bash /aria2/script/rpc_tracker.sh RPC "$ADDRESS:$PORT" "$SECRET"
+fi
